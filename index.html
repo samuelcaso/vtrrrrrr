@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Proyecto Spline VR</title>
+  
+  <style>
+    body { 
+      margin: 0; 
+      overflow: hidden; 
+      font-family: Arial, sans-serif;
+      background: #000;
+    }
+    
+    #container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+    
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 24px;
+      text-align: center;
+    }
+    
+    #vr-button {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 15px 40px;
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 1000;
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.5);
+    }
+    
+    #vr-button:hover {
+      background: #4f46e5;
+      transform: translateX(-50%) scale(1.05);
+    }
+
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 4px solid white;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <div id="loading">
+      <div class="spinner"></div>
+      <p>Cargando escena...</p>
+    </div>
+    
+    <!-- ⬇️ PEGA AQUÍ TU URL DE SPLINE (la completa) ⬇️ -->
+    <iframe 
+      id="spline-frame"
+      src="https://my.spline.design/galeriamejorada-pgWeRUBIwdYIoJn8Dfk9znpc/"
+      frameborder="0"
+      style="display: none;"
+      onload="frameLoaded()"
+    ></iframe>
+    
+    <button id="vr-button" style="display: none;">Entrar en VR 🥽</button>
+  </div>
+
+  <script>
+    // Función cuando carga el iframe
+    function frameLoaded() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('spline-frame').style.display = 'block';
+      document.getElementById('vr-button').style.display = 'block';
+      console.log('✅ Escena cargada exitosamente');
+    }
+
+    // Timeout de seguridad (si tarda más de 15 segundos)
+    setTimeout(() => {
+      if (document.getElementById('loading').style.display !== 'none') {
+        document.getElementById('loading').innerHTML = `
+          <p style="color: #ff6b6b;">⚠️ Error al cargar</p>
+          <p style="font-size: 16px;">Verifica que tu URL de Spline sea correcta</p>
+          <p style="font-size: 14px; color: #aaa;">Debe verse así:<br>https://prod.spline.design/XXXXX/scene.splinecode</p>
+        `;
+      }
+    }, 15000);
+
+    // Botón VR
+    document.getElementById('vr-button').addEventListener('click', async () => {
+      if (!navigator.xr) {
+        alert('⚠️ WebXR no disponible. Abre esta página en el navegador de Meta Quest.');
+        return;
+      }
+
+      try {
+        // Solicitar sesión VR
+        const supported = await navigator.xr.isSessionSupported('immersive-vr');
+        
+        if (!supported) {
+          alert('Tu dispositivo no soporta VR inmersivo');
+          return;
+        }
+
+        const session = await navigator.xr.requestSession('immersive-vr', {
+          optionalFeatures: ['local-floor', 'bounded-floor']
+        });
+        
+        console.log('🥽 Entrando en modo VR...');
+        
+        // La escena de Spline se verá en VR
+        // Nota: Spline tiene soporte limitado para VR en iframe
+        // Es posible que necesites exportar y usar Three.js directamente
+        
+        session.addEventListener('end', () => {
+          console.log('Saliste de VR');
+        });
+
+      } catch (error) {
+        console.error('Error VR:', error);
+        alert('No se pudo iniciar VR: ' + error.message);
+      }
+    });
+  </script>
+</body>
+</html>
